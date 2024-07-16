@@ -16,17 +16,11 @@ SOFTWARE.
 from viktor.parametrization import NumberField
 from viktor.parametrization import ViktorParametrization
 
-from munch import Munch
-from viktor.errors import UserError
 from viktor.geometry import GeoPoint
 from viktor.parametrization import (
     GeoPointField,
     NumberField,
-    OptionField,
-    Parametrization,
     Step,
-    Text,
-    ToggleButton,
 )
 from viktor.parametrization import (
     NumberField,
@@ -58,7 +52,7 @@ class Parametrization(ViktorParametrization):
     step_2 = Step('Step - 2 Gebäude', views=["run_grasshopper"])
     
     step_2.geometrie = Section("Geometrie")
-    step_2.geometrie.Raumhöhe = NumberField("Raumhöhe", variant="slider", min=2, max=5, step=0.1, default=2.5)
+    step_2.geometrie.Raumhöhe = NumberField("Raumhöhe", variant="slider", min=2.5, max=4, step=0.1, default=3)
 
 
     Step('Step 2', previous_label='Go to step 1', next_label='Go to step 3')

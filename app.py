@@ -5,7 +5,8 @@ from viktor.views import DataGroup, DataItem
 
 import json
 import rhino3dm
-from munch import unmunchify
+import time
+from munch import unmunchify, Munch
 
 from viktor import ViktorController
 from viktor.views import DataGroup
@@ -21,9 +22,10 @@ from viktor.views import GeometryView
 from viktor import File
 from pathlib import Path
 from viktor.views import GeometryResult
+from io import BytesIO
 
 from gis_functions import get_gdf, create_legend
-from gis_functions import get_climate_zones
+from gis_functions import find_climate_zone
 from parametrization import Parametrization, Step
 
 
@@ -66,20 +68,13 @@ class Controller(ViktorController):
         longitude = round(params.step_1.point.GeoPointField.lon, 3)  # Rundet auf 3 Nachkommastellen (nach norm)
         latitude = round(params.step_1.point.GeoPointField.lat, 2)   # Rundet auf 2 Nachkommastellen (nach norm)
 
-        # Erstellen eines Shapely Point Objekts für den Pin
-        point = Point(longitude, latitude)
+        selected_zone = find_climate_zone(gdf, latitude, longitude)
 
-        # Finde das Polygon im GeoDataFrame 'gdf', das den Punkt enthält
-        selected_zone = None
-        for idx, row in gdf.iterrows():
-            if row['geometry'].contains(point):
-                selected_zone = row['climate']
-                break
-
+        # Create the message based on the result
         if selected_zone:
-            climate_zone= f"Klimazone am Punkt ({latitude}, {longitude}): {selected_zone}"
+            climate_zone = f"Klimazone am Punkt ({latitude}, {longitude}): {selected_zone}"
         else:
-            climate_zone= f"Keine Klimazone am Punkt ({latitude}, {longitude} gefunden)"
+            climate_zone = f"Keine Klimazone am Punkt ({latitude}, {longitude}) gefunden"
 
         # Add the point_geojson to the features list of geojson_data
         geojson['features'].append(point_geojson)
@@ -99,35 +94,44 @@ class Controller(ViktorController):
         grasshopper_script_path = Path(__file__).parent / "files/Tinyhouse Generator.gh"
         script = File.from_path(grasshopper_script_path)
 
-        input_parameters = unmunchify(params.step_2)
 
-        # Funktion zur Überprüfung und Korrektur der input_parameters
-        def ensure_list(value):
-            if isinstance(value, (int, float)):
-                return [value]
-            return value
+        # Extracting values from the Munch object
+        gdf = gdf = get_gdf(params.step_1.styling)
+        latitude = params.step_1.point.GeoPointField.lat
+        longitude = params.step_1.point.GeoPointField.lon
+        raumhoehe = params.step_2.geometrie.Raumhöhe
+        klimazone = find_climate_zone(gdf, latitude, longitude)
 
-        # Anwenden der Korrektur auf alle input_parameters
-        def format_parameters(parameters):
-            formatted_params = {}
-            for key, value in parameters.items():
-                if isinstance(value, dict):
-                    formatted_params[key] = format_parameters(value)
-                else:
-                    formatted_params[key] = ensure_list(value)
-            return formatted_params
+        # Creating the dictionary in the required format
+        formatted_params = dict(
+            Raumhöhe = raumhoehe,
+            Längengrad = longitude,
+            Breitangrad = latitude,
+            Klimazone = klimazone
+        )      
 
-        formatted_input_parameters = format_parameters(input_parameters)
+        print(formatted_params)  
 
         # Grasshopper analyse laufen lassen
-        analysis = GrasshopperAnalysis(script=script, input_parameters=formatted_input_parameters)
-        analysis.execute(timeout=30)
+        analysis = GrasshopperAnalysis(script=script, input_parameters=formatted_params)
+        analysis.execute(timeout=180)
         output = analysis.get_output()
 
         # Convert output data to mesh
         file3dm = rhino3dm.File3dm()
-        obj = rhino3dm.CommonObject.Decode(json.loads(output["values"][0]["InnerTree"]['{0}'][0]["data"]))
-        file3dm.Objects.Add(obj)
+        inner_tree = output["values"][0]["InnerTree"]
+
+
+        # Iterate through each key in InnerTree
+        for key in inner_tree:
+            for data_item in inner_tree[key]:
+                # Decode the mesh from the JSON data
+                obj = rhino3dm.CommonObject.Decode(json.loads(data_item["data"]))
+                
+                # Add the decoded object to the file3dm
+                file3dm.Objects.Add(obj)
+
+        print(output)
         
         # Write to geometry_file
         geometry_file = File()

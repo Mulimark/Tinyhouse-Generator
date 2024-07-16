@@ -14,6 +14,7 @@ SOFTWARE.
 from pathlib import Path
 
 import geopandas as gpd
+from shapely.geometry import Point
 from geopandas import GeoDataFrame
 from viktor.views import MapLegend, Color
 
@@ -44,7 +45,7 @@ climate_colors = {
         'Dsc Cold-Dry_Summer-Cold_Summer': '#cab2d6',
         'Cwb Temperate-Dry_Winter-Warm_Summer': '#fdbf6f',
         'Cwc Temperate-Dry_Winter-Cold_Summer': '#1f78b4',
-        'Dfa Cold-Withouth_dry_season-Very_Cold_Winter': '#b15928',
+        'Dfd Cold-Withouth_dry_season-Very_Cold_Winter': '#b15928',
         'Dsd Cold-Dry_Summer-Very_Cold_Winter': '#cab2d6',
         'Dwd Cold-Dry_Winter-Very_Cold_Winter': '#6a3d9a'
     }
@@ -90,3 +91,25 @@ def create_legend():
 
     legend = MapLegend(legend_items)
     return legend
+
+def find_climate_zone(gdf, latitude, longitude):
+    """
+    Find the climate zone for a given latitude and longitude.
+
+    Parameters:
+    gdf (GeoDataFrame): A GeoDataFrame containing climate zone geometries.
+    latitude (float): The latitude of the point.
+    longitude (float): The longitude of the point.
+
+    Returns:
+    str: The name of the climate zone or None if not found.
+    """
+    point = Point(longitude, latitude)  # Note the order: (longitude, latitude)
+
+    selected_zone = None
+    for idx, row in gdf.iterrows():
+        if row['geometry'].contains(point):
+            selected_zone = row['climate']
+            break
+
+    return selected_zone  # Return the climate zone name or None if not found
