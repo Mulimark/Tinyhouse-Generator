@@ -132,7 +132,7 @@ class Controller(ViktorController):
                 file3dm.Objects.Add(obj)
 
         print(output)
-        
+
         # Write to geometry_file
         geometry_file = File()
         file3dm.Write(geometry_file.source, version=7)
