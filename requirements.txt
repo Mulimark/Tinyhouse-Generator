@@ -1,3 +1,0 @@
-viktor==14.12.0
-geopandas==0.14.4
-rhino3dm
