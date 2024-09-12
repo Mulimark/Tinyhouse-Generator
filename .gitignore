@@ -1,0 +1,32 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environment
+venv/
+VENV/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Logs
+*.log
+
+# IDE and editor settings
+.vscode/
+*.code-workspace
+.idea/
+
+# Windows file system
+Thumbs.db
+Desktop.ini
+
+# Other common config and temp files
+.vs/
+*.swp
+*.bak
+*.tmp
