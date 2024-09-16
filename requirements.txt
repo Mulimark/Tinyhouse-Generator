@@ -1,3 +1,6 @@
-viktor==14.12.0
+viktor==14.13.0
 geopandas==0.14.4
+viktor-table-view
 rhino3dm
+
+#old working was viktor 14.12.0

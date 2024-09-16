@@ -1,33 +1,12 @@
-"""Copyright (c) 2024 VIKTOR B.V.
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
-documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
-rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
-persons to whom the Software is furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
-Software.
-VIKTOR B.V. PROVIDES THIS SOFTWARE ON AN "AS IS" BASIS, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
-NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
-
-
-from viktor.parametrization import NumberField
-from viktor.parametrization import ViktorParametrization
-
 from viktor.geometry import GeoPoint
 from viktor.parametrization import (
     GeoPointField,
     NumberField,
     Step,
-)
-from viktor.parametrization import (
-    NumberField,
     Section,
-    NumberField,
     ViktorParametrization,
 )
+
 
 DEFAULT_LOCATION = GeoPoint(49.8728, 8.6512)
 
@@ -49,10 +28,15 @@ class Parametrization(ViktorParametrization):
 
 #Step 2 Ist Festlegen von Parametern für Das Gebäude
 
-    step_2 = Step('Step - 2 Gebäude', views=["run_grasshopper"])
+    step_2 = Step('Step - 2 Gebäude', views=["run_grasshopper", "view_floorplan"])
     
     step_2.geometrie = Section("Geometrie")
-    step_2.geometrie.Raumhöhe = NumberField("Raumhöhe", variant="slider", min=2.5, max=4, step=0.1, default=3)
+    step_2.geometrie.Raumhöhe = NumberField("Raumhöhe", variant="slider", min=2.3, max=4, step=0.1, default=2.5)
+    step_2.geometrie.AzimutRichtungEingang = NumberField('Azimut Richtung Eingang', min=0, max=360, default=90, variant='slider', description="Richtung des Eingangs in Grad. 0° = Norden 90° = Osten etc.")
 
 
     Step('Step 2', previous_label='Go to step 1', next_label='Go to step 3')
+
+#Step 3 Ist Festlegen von Parametern für Das Gebäude
+
+    step_3 = Step('Step - 3 Daten', views=["run_data_analysis", "run_weather_data"])

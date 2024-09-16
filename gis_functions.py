@@ -1,16 +1,3 @@
-"""Copyright (c) 2024 VIKTOR B.V.
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
-documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
-rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
-persons to whom the Software is furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
-Software.
-VIKTOR B.V. PROVIDES THIS SOFTWARE ON AN "AS IS" BASIS, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
-NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 from pathlib import Path
 
 import geopandas as gpd
@@ -19,35 +6,36 @@ from geopandas import GeoDataFrame
 from viktor.views import MapLegend, Color
 
 climate_colors = {
-        'ET Polar-Tundra': '#1f78b4',
-        'EF Polar-Frost': '#a6cee3',
-        'Aw Tropical-Savanna': '#33a02c',
-        'BSh Arid-Steppe-Hot': '#e31a1c',
-        'BWh Arid-Desert-Hot': '#ff7f00',
-        'Af Tropical-Rainforest': '#b2df8a',
-        'Dsa Cold-Dry_Summer-Hot_Summer': '#6a3d9a',
-        'Am Tropical-Monsoon': '#fb9a99',
-        'Dwa Cold-Dry_Winter-Hot_Summer': '#cab2d6',
-        'BSk Arid-Steppe-Cold': '#fdbf6f',
-        'Dwb Cold-Dry_Winter-Warm_Summer': '#ff7f00',
-        'Dfa Cold-Withouth_dry_season-Hot_Summer': '#b15928',
-        'Dfb Cold-Withouth_dry_season-Warm_Summer': '#ffff99',
-        'Csb Temperate-Dry_Summer-Warm_Summer': '#a6cee3',
-        'Dfc Cold-Withouth_dry_season-Cold_Summer': '#1f78b4',
-        'Cfc Temperate-Withouth_dry_season-Cold_Summer': '#b2df8a',
-        'BWk Arid-Desert-Cold': '#ff7f00',
-        'Cfa Temperate-Withouth_dry_season-Hot_Summer': '#e31a1c',
-        'Cfb Temperate-Withouth_dry_season-Warm_Summer': '#33a02c',
-        'Csa Temperate-Dry_Summer-Hot_Summer': '#fb9a99',
-        'Dwc Cold-Dry_Winter-Cold_Summer': '#6a3d9a',
-        'Dsb Cold-Dry_Summer-Warm_Summer': '#ffff99',
-        'Cwa Temperate-Dry_Winter-Hot_Summer': '#ff7f00',
-        'Dsc Cold-Dry_Summer-Cold_Summer': '#cab2d6',
-        'Cwb Temperate-Dry_Winter-Warm_Summer': '#fdbf6f',
-        'Cwc Temperate-Dry_Winter-Cold_Summer': '#1f78b4',
-        'Dfd Cold-Withouth_dry_season-Very_Cold_Winter': '#b15928',
-        'Dsd Cold-Dry_Summer-Very_Cold_Winter': '#cab2d6',
-        'Dwd Cold-Dry_Winter-Very_Cold_Winter': '#6a3d9a'
+    'Af Tropical-Rainforest': '#0000ff',
+    'Am Tropical-Monsoon': '#0078ff',
+    'Aw Tropical-Savanna': '#46aafa',
+    'BSh Arid-Steppe-Hot': '#f5a500',
+    'BWh Arid-Desert-Hot': '#ff0000',
+    'BWk Arid-Desert-Cold': '#ff9696',
+    'BSk Arid-Steppe-Cold': '#ffdc64',
+    'Cfa Temperate-Withouth_dry_season-Hot_Summer': '#c8ff50',
+    'Cfb Temperate-Withouth_dry_season-Warm_Summer': '#64ff50',
+    'Cfc Temperate-Withouth_dry_season-Cold_Summer': '#32c800',
+    'Csa Temperate-Dry_Summer-Hot_Summer': '#ffff00',
+    'Csb Temperate-Dry_Summer-Warm_Summer': '#c8c800',
+    'Csc Temperate-Dry_Summer-Cold_Summer': '#969600',
+    'Cwa Temperate-Dry_Winter-Hot_Summer': '#96ff96',
+    'Cwb Temperate-Dry_Winter-Warm_Summer': '#64c864',
+    'Cwc Temperate-Dry_Winter-Cold_Summer': '#329632',
+    'Dfa Cold-Withouth_dry_season-Hot_Summer': '#00ffff',
+    'Dfb Cold-Withouth_dry_season-Warm_Summer': '#37c8ff',
+    'Dfc Cold-Withouth_dry_season-Cold_Summer': '#007d7d',
+    'Dfd Cold-Withouth_dry_season-Very_Cold_Winter': '#004a5f',
+    'Dsa Cold-Dry_Summer-Hot_Summer': '#ff00ff',
+    'Dsb Cold-Dry_Summer-Warm_Summer': '#c800c8',
+    'Dsc Cold-Dry_Summer-Cold_Summer': '#963296',
+    'Dsd Cold-Dry_Summer-Very_Cold_Winter': '#966496',
+    'Dwa Cold-Dry_Winter-Hot_Summer': '#aabfff',
+    'Dwb Cold-Dry_Winter-Warm_Summer': '#5a78dc',
+    'Dwc Cold-Dry_Winter-Cold_Summer': '#4b50b4',
+    'Dwd Cold-Dry_Winter-Very_Cold_Winter': '#320087',
+    'EF Polar-Frost': '#666666',
+    'ET Polar-Tundra': '#b2b2b2'
     }
 
 def get_gdf(styling) -> GeoDataFrame:
@@ -73,13 +61,14 @@ def get_gdf(styling) -> GeoDataFrame:
     gdf['fill'] = gdf['climate'].map(climate_colors)
     return gdf
 
-
+'''
 def get_climate_zones():
     """Returns a list of unique climate zones in the GeoDataFrame."""
     gdf = gpd.read_file(Path(__file__).parent / "files/raw-data.json", crs=4326)
     gdf = gdf.to_crs("EPSG:4326")
     climate_list = sorted(gdf['climate'].unique().tolist())
     return climate_list
+'''
 
 def create_legend():
     """Creates a map legend based on climate zones and their colors."""
