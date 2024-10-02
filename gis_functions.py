@@ -1,10 +1,11 @@
 from pathlib import Path
-
 import geopandas as gpd
 from shapely.geometry import Point
 from geopandas import GeoDataFrame
 from viktor.views import MapLegend, Color
 
+
+#Dictionary welches jeder Klimazone eine Farbe zuweist (in Hex)
 climate_colors = {
     'Af Tropical-Rainforest': '#0000ff',
     'Am Tropical-Monsoon': '#0078ff',
@@ -39,14 +40,14 @@ climate_colors = {
     }
 
 def get_gdf(styling) -> GeoDataFrame:
-    # Add attribute table to the geodataframe as a string, so it can be added to the map as a click-event
+    # Aus GeoJSON eine Geodataframe bilden der dann angezgit werden kann
+    #Unter verwendung von verschidenen Styleparametern
     gdf = gpd.read_file(Path(__file__).parent / "files/raw-data.json", crs=4326)
     gdf = gdf.to_crs("EPSG:4326")
     field_names = gdf.columns.drop(["geometry"])
     gdf["fill-opacity"] = styling.opacity
     gdf["stroke-width"] = styling.line_width
 
-    # Add attribute table to the geodataframe as a string, so it can be added to the map as a click-event
     gdf_description = ""
     for field_name in field_names:
         gdf_description = ""
@@ -55,15 +56,15 @@ def get_gdf(styling) -> GeoDataFrame:
         else:
             gdf_description = "Klimazone nicht gefunden  \n  "
     gdf["description"] = gdf_description
-    gdf.fillna("")  # Get rid of NaN-values, which can cause problems with some calculations
+    gdf.fillna("")
     
-    # Assign colors based on climate zones
+    #Farben aus Dicitionary zu dem gdf hinzufügen
     gdf['fill'] = gdf['climate'].map(climate_colors)
     return gdf
 
 '''
 def get_climate_zones():
-    """Returns a list of unique climate zones in the GeoDataFrame."""
+    """Methode die alle Einzigartigen Klimazonen auflisted, verwendet um Farb Dictionary zu erstellen"""
     gdf = gpd.read_file(Path(__file__).parent / "files/raw-data.json", crs=4326)
     gdf = gdf.to_crs("EPSG:4326")
     climate_list = sorted(gdf['climate'].unique().tolist())
@@ -71,7 +72,8 @@ def get_climate_zones():
 '''
 
 def create_legend():
-    """Creates a map legend based on climate zones and their colors."""
+    #Baut eine Legende basierend auf dem Farb Dictionary
+
     legend_items = []
 
     for climate_zone, color_hex in climate_colors.items():
@@ -82,18 +84,9 @@ def create_legend():
     return legend
 
 def find_climate_zone(gdf, latitude, longitude):
-    """
-    Find the climate zone for a given latitude and longitude.
-
-    Parameters:
-    gdf (GeoDataFrame): A GeoDataFrame containing climate zone geometries.
-    latitude (float): The latitude of the point.
-    longitude (float): The longitude of the point.
-
-    Returns:
-    str: The name of the climate zone or None if not found.
-    """
-    point = Point(longitude, latitude)  # Note the order: (longitude, latitude)
+    #indet die Klimazone auf basis von Längen und Breitengrad im GDF
+    
+    point = Point(longitude, latitude)
 
     selected_zone = None
     for idx, row in gdf.iterrows():
@@ -101,4 +94,4 @@ def find_climate_zone(gdf, latitude, longitude):
             selected_zone = row['climate']
             break
 
-    return selected_zone  # Return the climate zone name or None if not found
+    return selected_zone

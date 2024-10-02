@@ -14,8 +14,7 @@ DEFAULT_LOCATION = GeoPoint(49.8728, 8.6512)
 
 class Parametrization(ViktorParametrization):
 
-#Step 1 Ist auswahl von Location und Übergabe von Klimazone in GH Modell
-
+#Step 1 Ist auswahl von Location
     step_1 = Step('Step 1 - Karte',  views=["get_geojson_view"])
     step_1.point = Section("Standort")
     step_1.point.GeoPointField= GeoPointField("Eingabe eines Standortes",
@@ -26,7 +25,7 @@ class Parametrization(ViktorParametrization):
     step_1.styling.opacity = NumberField("Opazität", variant="slider", min=0, max=1, step=0.1, default=0.5)
     step_1.styling.line_width = NumberField("Linienstärke", variant="slider", min=0, max=5, default=1)
 
-#Step 2 Ist Festlegen von Parametern für Das Gebäude
+#Step 2 Ist Festlegen von Parametern für Das Gebäude sowie laufen lassen der Simulation
 
     step_2 = Step('Step - 2 Gebäude', views=["run_grasshopper", "view_floorplan"])
     

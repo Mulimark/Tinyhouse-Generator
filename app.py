@@ -14,15 +14,19 @@ from parametrization import Parametrization
 
 @memoize
 def memoized_grasshopper_analysis(json_input):
-        """Memoized function to run Grasshopper analysis using packed JSON input."""
-        
-        # Unpack JSON input
+        #Funktion die die Grasshopper simulation ausführt
+        #wird im Arbeitsspeicher zwischengespeichert       
+        #Ergebnis kann deswegen mehrfach wieder aufgerufen werden
+
         formatted_params = json.loads(json_input)
 
+
+        #Festlegen wo das gh Skript liegt und übergeben der Hops-Parameter an das Skript
         grasshopper_script_path = Path(__file__).parent / "files/Tinyhouse Generator.gh"
         script = File.from_path(grasshopper_script_path)
 
         analysis = GrasshopperAnalysis(script=script, input_parameters=formatted_params)
+        #Analyse wird durchgeführt, sollte sie läger als 240 Sekunden dauern, wird sie angebrochen
         analysis.execute(timeout=240)
 
         return analysis.get_output()
@@ -35,14 +39,18 @@ class Controller(ViktorController):
     # Views für Step 1 Beinhalten GIS und deren Funktionen#
     #######################################################
 
-    @GeoJSONAndDataView("Map", duration_guess=1)
+    @GeoJSONAndDataView("Kartenansicht - Standortauswahl", duration_guess=1)
     def get_geojson_view(self, params, **kwargs) -> GeoJSONAndDataResult:
-        """Show all the map elements and data results"""
+
+        #Kartenansicht mit GroJSON Overlay
+
         gdf = get_gdf(params.step_1.styling)
         geojson = json.loads(gdf.to_json())
         gdf_labels = gdf.copy()
         gdf_labels["label_geometry"] = gdf_labels.representative_point()
         labels = [MapLabel(gdf_labels.label_geometry[0].x, gdf_labels.label_geometry[0].x, " ", 20)]
+
+        #Festlegen der Position des Pins und das Styling des
 
         if 'GeoPointField' in params.step_1.point:
             latitude = params.step_1.point.GeoPointField.lat
@@ -59,25 +67,30 @@ class Controller(ViktorController):
                 }
             }
         else:
-            print("No valid point information found in params.")
+            print("Kein valider Punkt angegeben")
+
+        #Runden des Längen und Breitengrades in übliches Format
+        #zur späteren Anzeige in der Webapp
 
         longitude = round(params.step_1.point.GeoPointField.lon, 3)
         latitude = round(params.step_1.point.GeoPointField.lat, 2)
 
         selected_zone = find_climate_zone(gdf, latitude, longitude)
 
-        # Create the message based on the result
+        #Wurde eine Korrekte Klimazone ausgewählt?
         if selected_zone:
             climate_zone = f"Klimazone am Punkt ({latitude}, {longitude}): {selected_zone}"
         else:
             climate_zone = f"Keine Klimazone am Punkt ({latitude}, {longitude}) gefunden"
 
-        # Add the point_geojson to the features list of geojson_data
+        #Hinzufügen der Information zum View
         geojson['features'].append(point_geojson)
         data_items = DataItem("", climate_zone)
         attribute_results = DataGroup(data_items)
 
+        #Abrufen der Legende samt Farben
         legend = create_legend()
+
         return GeoJSONAndDataResult(geojson, attribute_results, labels, legend)
 
     ################################################
@@ -86,9 +99,11 @@ class Controller(ViktorController):
 
 
 
-    @GeometryView("3D Modell", duration_guess=10, x_axis_to_right=True, update_label='Simulation starten')
+    @GeometryView("3D Modell Ansicht", duration_guess=10, x_axis_to_right=True, update_label='Simulation starten')
     def run_grasshopper(self, params, **kwargs):
-        # Pack input parameters into JSON format
+        
+        #Geometrieanzeige
+        #Zunächst initialisierung der Parameter
         gdf = get_gdf(params.step_1.styling)
         latitude = params.step_1.point.GeoPointField.lat
         longitude = params.step_1.point.GeoPointField.lon
@@ -104,15 +119,16 @@ class Controller(ViktorController):
             AzimutRichtungEingang=azimutRichtungEingang
         )
 
-        # Convert the parameters into a JSON string
+        #Parameter in ein JSON String damit Hops sie lesen kann
         json_input = json.dumps(formatted_params)
 
-        # Use memoized function to avoid re-executing analysis
+        #memoized Function aufrufen für GH Skript, fragt immer vorher ab ob sich Parameter verändert haben
         output = memoized_grasshopper_analysis(json_input)
 
         file3dm = rhino3dm.File3dm()
         geometry_inner_tree = get_inner_tree_by_param_name(output, "Geometry")
 
+        #Hinzufügen der Geometrien zum Viewmodel
         def add_objects_to_model(inner_tree):
             if not inner_tree:
                 print("Kein InnerTree gefunden.")
@@ -131,7 +147,9 @@ class Controller(ViktorController):
 
     @GeometryView("Grundriss und Schnitte", duration_guess=10, x_axis_to_right=True, update_label='Lade aktuellen Grundriss', view_mode="2D")
     def view_floorplan(self, params, **kwargs):
-        # Pack the input parameters into JSON format
+
+        #2D View für Grundriss und Schnitte
+        #Zunächst initialisierung der Parameter
         gdf = get_gdf(params.step_1.styling)
         latitude = params.step_1.point.GeoPointField.lat
         longitude = params.step_1.point.GeoPointField.lon
@@ -147,15 +165,16 @@ class Controller(ViktorController):
             AzimutRichtungEingang=azimutRichtungEingang
         )
 
-        # Convert the parameters into a JSON string
+        #Parameter in ein JSON String damit Hops sie lesen kann
         json_input = json.dumps(formatted_params)
 
-        # Use memoized function to avoid re-executing analysis
+        #memoized Function aufrufen für GH Skript, fragt immer vorher ab ob sich Parameter verändert haben
         output = memoized_grasshopper_analysis(json_input)
 
         file3dm = rhino3dm.File3dm()
         floorplan_inner_tree = output["values"][2]["InnerTree"]
 
+        #Hinzufügen der Geometrien zum Viewmodel
         def add_objects_to_model(inner_tree):
             for key in inner_tree:
                 for data_item in inner_tree[key]:
@@ -172,9 +191,11 @@ class Controller(ViktorController):
     # Views für Step 3 Beinhaltet Datenverarbeitung#
     ################################################
 
-    @TableView("Information", duration_guess=1)
+    @TableView("Informationen zur Parametrisierung", duration_guess=1)
     def run_data_analysis(self, params, **kwargs):
-        # Fetch in-memory text data from Grasshopper output
+
+        #Tabelle für Datenansicht
+        #Zunächst initialisierung der Parameter
         gdf = get_gdf(params.step_1.styling)
         latitude = params.step_1.point.GeoPointField.lat
         longitude = params.step_1.point.GeoPointField.lon
@@ -190,23 +211,23 @@ class Controller(ViktorController):
             AzimutRichtungEingang=azimutRichtungEingang
         )
 
-        # Convert the parameters into a JSON string
+        #Parameter in ein JSON String damit Hops sie lesen kann
         json_input = json.dumps(formatted_params)
 
-        # Use memoized function to avoid re-executing analysis
+        #memoized Function aufrufen für GH Skript, fragt immer vorher ab ob sich Parameter verändert haben
         output = memoized_grasshopper_analysis(json_input)
         text_inner_tree = get_inner_tree_by_param_name(output, "Tx")
 
-        # Check if text_inner_tree has the expected structure
+        #Hinzufügen der Infos zur richtigen Tabelle
         if text_inner_tree and '{0}' in text_inner_tree:
-            # Extract the data string
+            #String aus dem Textdata bilden
             text_data = text_inner_tree['{0}'][0]['data']
             formatted_text = text_data.replace("\\r\\n", "\n").splitlines()
 
-            # Parse the text data using the provided parse_data_string function
+            #"Parameter_data" aus dem String herauslesen (erste Ausgabe)
             parameter_data, _ = parse_data_string(formatted_text)
 
-            # Prepare the table data for parameters
+            #Tablle Vorbereiten und hinzufügen der Daten
             table_data = []
             row_headers = []
             for key, value_dict in parameter_data.items():
@@ -215,12 +236,14 @@ class Controller(ViktorController):
 
             return TableResult(table_data, column_headers=["Wert", "Begründung"], row_headers=row_headers)
         else:
-            print("No valid data found in text_inner_tree")
+            print("Keine Daten gefunden")
             return TableResult([], column_headers=["Wert", "Begründung"], row_headers=[])
 
     @TableView("Wetterdaten", duration_guess=1)
     def run_weather_data(self, params, **kwargs):
-        # Fetch necessary parameters for the analysis
+
+        #Tabelle für Wetterdaten
+        #Zunächst initialisierung der Parameter
         gdf = get_gdf(params.step_1.styling)
         latitude = params.step_1.point.GeoPointField.lat
         longitude = params.step_1.point.GeoPointField.lon
@@ -236,23 +259,23 @@ class Controller(ViktorController):
             AzimutRichtungEingang=azimutRichtungEingang
         )
 
-        # Convert the parameters into a JSON string
+        #Parameter in ein JSON String damit Hops sie lesen kann
         json_input = json.dumps(formatted_params)
 
-        # Use memoized function to avoid re-executing analysis
+        #memoized Function aufrufen für GH Skript, fragt immer vorher ab ob sich Parameter verändert haben
         output = memoized_grasshopper_analysis(json_input)
         text_inner_tree = get_inner_tree_by_param_name(output, "Tx")
 
-        # Check if text_inner_tree has the expected structure
+        #Hinzufügen der Infos zur richtigen Tabelle
         if text_inner_tree and '{0}' in text_inner_tree:
-            # Extract the data string
+            #String aus dem Textdata bilden
             text_data = text_inner_tree['{0}'][0]['data']
             formatted_text = text_data.replace("\\r\\n", "\n").splitlines()
 
-            # Parse the weather data
+            #"wetterdaten" aus dem String herauslesen (zweite Ausgabe)
             _, wetterdaten = parse_data_string(formatted_text)
 
-            # Prepare the table data for weather data
+            #Tablle Vorbereiten und hinzufügen der Daten
             table_data = []
             row_headers = []
             for monat, daten in wetterdaten.items():
@@ -264,5 +287,5 @@ class Controller(ViktorController):
 
             return TableResult(table_data, column_headers=["Schneefall [mm]", "Niederschlag [mm]"], row_headers=row_headers)
         else:
-            print("No valid data found in text_inner_tree")
+            print("Keine Daten gefunden")
             return TableResult([], column_headers=["Schneefall [mm]", "Niederschlag [mm]"], row_headers=[])
