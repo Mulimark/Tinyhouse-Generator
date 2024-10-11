@@ -4,6 +4,8 @@ from viktor.parametrization import (
     NumberField,
     Step,
     Section,
+    Image,
+    Text,
     ViktorParametrization,
 )
 
@@ -16,6 +18,18 @@ class Parametrization(ViktorParametrization):
 
 #Step 1 Ist auswahl von Location
     step_1 = Step('Step 1 - Karte',  views=["get_geojson_view"])
+    step_1.intro = Section('Übersicht')
+    step_1.intro.text = Text("""
+## Tiny House Generator
+
+Diese App verwendet parametrische Berechnungen, um das Design und die Energieeffizienz eines Tiny Houses zu optimieren. Die Berechnungen basieren auf einem Grasshopper-Skript. Benutzer können die Eingabeparameter anpassen und erhalten detaillierte Informationen zu Materialien, Bauweisen sowie Wetterdaten.
+
+Die App zielt darauf ab, eine einfache und schnelle Möglichkeit zu bieten, Tiny House Designs nach spezifischen Standortbedingungen zu erstellen und einzusehen.
+
+**Beginne** **damit** **einen** **Standort** **auszuwählen!**                             
+
+""")
+    step_1.intro.image = Image(path='TU_KGBauko.png', flex=65, align='center')
     step_1.point = Section("Standort")
     step_1.point.GeoPointField= GeoPointField("Eingabe eines Standortes",
     description="Klicken Sie auf einen Ort auf der Karte, um ihn auszuwählen. Löschen Sie vorher den alten Ort",
