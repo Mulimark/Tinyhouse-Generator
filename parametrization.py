@@ -7,6 +7,7 @@ from viktor.parametrization import (
     Image,
     Text,
     ViktorParametrization,
+    BooleanField,
 )
 
 
@@ -35,9 +36,10 @@ Die App zielt darauf ab, eine einfache und schnelle Möglichkeit zu bieten, Tiny
     description="Klicken Sie auf einen Ort auf der Karte, um ihn auszuwählen. Löschen Sie vorher den alten Ort",
     default=DEFAULT_LOCATION,)
   
-    step_1.styling = Section("Styling")
+    step_1.styling = Section("Kartendarstellung")
     step_1.styling.opacity = NumberField("Opazität", variant="slider", min=0, max=1, step=0.1, default=0.5)
     step_1.styling.line_width = NumberField("Linienstärke", variant="slider", min=0, max=5, default=1)
+    step_1.styling.showlegend = BooleanField("Legende Anzeigen", description="Aussuchen ob die Legende der Köppen-Geiger Klimakarte angezeigt werden soll. Sollte auf mobilen Geräten aus bleiben.")
 
 #Step 2 Ist Festlegen von Parametern für Das Gebäude sowie laufen lassen der Simulation
 
@@ -48,7 +50,7 @@ Die App zielt darauf ab, eine einfache und schnelle Möglichkeit zu bieten, Tiny
     step_2.geometrie.AzimutRichtungEingang = NumberField('Azimut Richtung Eingang', min=0, max=360, default=90, variant='slider', description="Richtung des Eingangs in Grad. 0° = Norden 90° = Osten etc.")
 
 
-    Step('Step 2', previous_label='Go to step 1', next_label='Go to step 3')
+    Step('Step 2', previous_label='Zurück zu Step 1', next_label='Zu Step 3')
 
 #Step 3 Ist Festlegen von Parametern für Das Gebäude
 

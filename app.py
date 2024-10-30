@@ -1,5 +1,4 @@
 import json
-import os
 import rhino3dm
 from pathlib import Path
 
@@ -9,7 +8,7 @@ from viktor.external.grasshopper import GrasshopperAnalysis
 from viktor.utils import memoize
 
 from gis_functions import get_gdf, create_legend, find_climate_zone
-from json_utils import parse_data_string, read_json_file, get_inner_tree_by_param_name
+from json_utils import parse_data_string, get_inner_tree_by_param_name
 from parametrization import Parametrization
 
 @memoize
@@ -87,11 +86,13 @@ class Controller(ViktorController):
         geojson['features'].append(point_geojson)
         data_items = DataItem("", climate_zone)
         attribute_results = DataGroup(data_items)
-
-        #Abrufen der Legende samt Farben
         legend = create_legend()
 
-        return GeoJSONAndDataResult(geojson, attribute_results, labels, legend)
+        #Abrufen der Legende samt Farben
+        if params.step_1.styling.showlegend:
+            return GeoJSONAndDataResult(geojson, attribute_results, labels, legend)
+        else:
+            return GeoJSONAndDataResult(geojson, attribute_results, labels)
 
     ################################################
     # Views für Step 2 Beinhaltet Gebäude Geometrie#

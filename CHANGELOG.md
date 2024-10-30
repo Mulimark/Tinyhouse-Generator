@@ -1,0 +1,1 @@
+Legende der Köppen-Geiger Karte ist jetzt Schaltbar
